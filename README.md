@@ -173,31 +173,61 @@ Definir en el repositorio (**Settings → Secrets and variables → Actions**):
 - **Secretos**: `DB_USER`, `DB_PASSWORD` → en la pestaña *Secrets*.
 
 ```yaml
-name: Build & Deploy
+name: Build, Test and Push Docker Image
 
+# ===== Triggers del workflow =====
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - '**'       # Se ejecuta en cualquier rama al hacer push
+    # paths:      # opcional: limitar a ciertos archivos
+    #   - 'src/**'
+    #   - 'Dockerfile'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-and-push:
+    runs-on: ubuntu-latest   # Runner proporcionado por GitHub, con Docker y Linux listo
 
+    # ===== Pasos del job =====
     steps:
-      - uses: actions/checkout@v3
+      # ---- 1. Obtener el código del repositorio ----
+      - name: Checkout code
+        uses: actions/checkout@v3
+        # Descarga el código fuente del commit que disparó el workflow
 
+      # ---- 2. Preparar JDK y Maven ----
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 23
+        # Necesario si quieres compilar y testear tu proyecto Spring Boot
+
+      # ---- 3. Construir el proyecto con Maven ----
+      - name: Build Maven project
+        run: mvn clean package
+        # Ejecuta la construcción del jar y tests (si no usas -DskipTests)
+        # El resultado se genera en target/*.jar
+
+      # ---- 4. Construir la imagen Docker ----
       - name: Build Docker image
-        run: docker build -t mi-app .
+        run: docker build -t ghcr.io/${{ github.repository }}:latest .
+        # Construye la imagen usando el Dockerfile del repositorio
+        # La etiqueta apunta a GitHub Container Registry (GHCR)
 
-      - name: Run container
-        run: |
-          docker run \
-            -e DB_HOST=${{ vars.DB_HOST }} \
-            -e DB_PORT=${{ vars.DB_PORT }} \
-            -e DB_NAME=${{ vars.DB_NAME }} \
-            -e DB_USER=${{ secrets.DB_USER }} \
-            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            mi-app
+      # ---- 5. Loguearse en GHCR ----
+      - name: Push Docker image
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}           # Usuario que disparó el workflow
+          password: ${{ secrets.GITHUB_TOKEN }}  # Token temporal proporcionado por GitHub
+        # Necesario para poder subir la imagen a GHCR
+
+      # ---- 6. Subir la imagen al registro ----
+      - name: Push image
+        run: docker push ghcr.io/${{ github.repository }}:latest
+        # Envía la imagen recién construida a GHCR con la etiqueta "latest"
 ```
 
 > Nunca uses `echo ${{ secrets.DB_PASSWORD }}` en logs. GitHub lo enmascara, pero sigue siendo mala práctica.
