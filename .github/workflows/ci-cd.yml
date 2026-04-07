@@ -1,4 +1,4 @@
-name: Primer flujo de trabajo CI/CD (Build, Test and Push Docker Image)
+name: Primer flujo de trabajo CI/CD (Build, Test and Push Docker Image) para Ampliación de Entornos de Desarrollo
 
 # ===== Disparadores del workflow =====
 on:
