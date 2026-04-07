@@ -34,7 +34,7 @@ jobs:
 
       # 3. Construir la imagen Docker usando el Dockerfile
       - name: Build Docker image
-        run: docker build -t ghcr.io/Espinoza-10/aaee_mapamundi_sb:latest .
+        run: docker build -t ghcr.io/espinoza-10/aaee_mapamundi_sb:latest .
 
       # 4. Push a GHCR (GitHub Container Registry)
       - name: Push Docker image
@@ -45,5 +45,5 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push image
-        run: docker push ghcr.io/Espinoza-10/aaee_mapamundi_sb:latest .
+        run: docker push ghcr.io/espinoza-10/aaee_mapamundi_sb:latest .
 
