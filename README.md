@@ -131,34 +131,17 @@ DB_ROOT_PASSWORD=root
 
 Archivo `docker-compose.yml`:
 ```yaml
-version: "3.8"
-
 services:
   app:
-    build: .
+    image: ghcr.io/profies/aaee_mapamundi_sb:latest
+    container_name: aaee_mapamundi_app_xxx
     ports:
       - "8080:8080"
     env_file:
       - .env
     depends_on:
       - db
-
-  db:
-    image: mysql:latest
-    container_name: mysql_vdlp
-    hostname: mysql.vdlp
-    ports:
-      - "3306:3306"
-    env_file:
-      - .env
-    volumes:
-      - ./mysql/conf.d:/etc/mysql/conf.d
-      - ./mysql/init:/docker-entrypoint-initdb.d
-      - mysql_data:/var/lib/mysql
     restart: always
-
-volumes:
-  mysql_data:
 ```
 
 > `depends_on` solo garantiza que el contenedor `db` haya **arrancado**, no que MySQL esté listo para aceptar conexiones. La aplicación puede fallar al inicio si intenta conectarse antes de que MySQL termine de inicializarse. Se recomienda añadir lógica de reintento en la aplicación.
