@@ -45,4 +45,5 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push image
-        run: docker push ghcr.io/${{ github.repository }}:latest
+        run: docker push ghcr.io/Espinoza-10/aaee_mapamundi_sb:latest .
+
